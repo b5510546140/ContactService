@@ -8,6 +8,8 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.glassfish.jersey.server.ServerProperties;
 
+import contact.resource.*;
+
 public class JettyMain {
 	static final int PORT = 8080;
 	
@@ -22,7 +24,7 @@ public class JettyMain {
 		ServletContextHandler context = new ServletContextHandler( ServletContextHandler.SESSIONS );
 		context.setContextPath("/");
 		ServletHolder holder = new ServletHolder( org.glassfish.jersey.servlet.ServletContainer.class );
-		holder.setInitParameter(ServerProperties.PROVIDER_PACKAGES, "contact.service");
+		holder.setInitParameter(ServerProperties.PROVIDER_PACKAGES, "contact.resource");
 		
 		context.addServlet( holder, "/*" );
 

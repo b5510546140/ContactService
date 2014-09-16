@@ -30,6 +30,7 @@ public class ContactDao {
 	/** add a single contact with given id for testing. */
 	private void createTestContact(long id) {
 		Contact test = new Contact("Test contact", "Joe Experimental", "none@testing.com" ,"012345");
+		System.out.println("create");
 		test.setId(id);
 		contacts.add(test);
 	}

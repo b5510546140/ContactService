@@ -4,6 +4,8 @@
  * @version 2014/09/16
  */
 package contact.resource;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,21 +29,30 @@ import javax.xml.bind.JAXBElement;
 
 import contact.entity.Contact;
 import contact.service.ContactDao;
+import contact.service.DaoFactory;
+import contact.service.mem.MemContactDao;
 
 @Path("/contacts")
 @Singleton
 public class ContractResource {
 
 		private Map<String, String> greetings = new HashMap<>();
-		private ContactDao dao = new ContactDao();
+		private ContactDao dao;
 		@Context
 		UriInfo uriInfo;
 		
+		public ContractResource(){
+			System.out.println("contact resource constructor");
+			dao = DaoFactory.getInstance().getContactDao();
+		}
 		/**
 		 * get all of contact
 		 * @return
 		 */
 		public Response getContact( ) {
+				System.out.println(uriInfo.getRequestUri());
+				System.out.println(uriInfo.getAbsolutePath());
+				
 				GenericEntity<List<Contact>> GenericEn = new GenericEntity<List<Contact>>(dao.findAll()){};
 	            return Response.ok(GenericEn).build(); 
 	            }
@@ -56,6 +67,9 @@ public class ContractResource {
 		@Produces( MediaType.APPLICATION_XML )
 		public Response getContact( @PathParam("id") long id ) {
 	            Contact contact = dao.find(id);
+	            if(contact == null){
+	            	return Response.status(Response.Status.NO_CONTENT).build();
+	            }
 	            return Response.ok(contact).build(); 
 	            }
 		/**
@@ -70,7 +84,11 @@ public class ContractResource {
 					 return getContact(); 
 				}
 				else{
-					return Response.ok(dao.searchTitle(q)).build(); 
+					Contact contact = dao.searchTitle(q);
+					if(contact == null){
+						return Response.status(Response.Status.NO_CONTENT).build(); 
+					}
+					return Response.ok(contact).build(); 
 				}
 	    	}
 		
@@ -84,20 +102,26 @@ public class ContractResource {
 		 */
 		@POST
 		@Consumes({ MediaType.APPLICATION_XML})
-		public Response addContact(JAXBElement<Contact> element, @Context UriInfo uriInfo ){
-			Contact contact = element.getValue();
-			if(dao.find(contact.getId())== null){
-				if(dao.save(contact)){
-					return Response.created(uriInfo.getAbsolutePathBuilder().path(contact.getId()+"").build()).build();
+		public Response postContact(JAXBElement<Contact> contact) {
+			Contact c = (Contact)contact.getValue();
+			if(dao.find(c.getId()) == null){
+				System.out.println("null");
+				boolean success = dao.save(c);
+				System.out.println(success);
+				if(success){
+					try {
+						return Response.created(new URI("localhost:8080/contacts/" + c.getId())).type(MediaType.APPLICATION_XML).entity(contact).build();
+					} catch (URISyntaxException e) {}
 				}
-				else{ //dao can't save
-					return Response.status(Response.Status.BAD_REQUEST).build();
-				}
+				return Response.status(Response.Status.BAD_REQUEST).build();
 			}
-			else{ //dao find contact id
-					return Response.status(Response.Status.CONFLICT).build();
+			else{
+				return Response.status(Response.Status.CONFLICT).location(uriInfo.getRequestUri()).entity(contact).build();
 			}
+			
 		}
+		
+		
 		
 		/**
 		 * use to update some contact
@@ -106,6 +130,26 @@ public class ContractResource {
 		 * @return response if it can update response ok
 		 * @return response bad request if it Contact dao can't update
 		 */
+//		@PUT
+//		@Path ("{id}")
+//		public Response updateContact(JAXBElement<Contact> element , @PathParam ("id") long id){
+//			Contact contact = element.getValue();
+//			contact.setId(id);
+//			System.out.println(dao.isExisted(id));
+//			if(!dao.isExisted(id)){
+//				if(contact.getId() != 0 && contact.getId() != id ){
+//					return Response.status( Response.Status.BAD_REQUEST ).build();
+//				}
+//				else
+//				{
+//					contact.setId( id );
+//					dao.update( contact );
+//					return Response.ok().build();
+//				}
+//			}
+//			return Response.status(Response.Status.NOT_FOUND).build();
+//		}
+		
 		@PUT
 		@Path ("{id}")
 		public Response updateContact(JAXBElement<Contact> element , @PathParam ("id") long id){
@@ -118,6 +162,9 @@ public class ContractResource {
 				return Response.status(Response.Status.NOT_FOUND).build();
 			}
 		}
+		
+		
+		
 		
 		/**
 		 * delete the contact from id.
@@ -132,7 +179,7 @@ public class ContractResource {
 				return Response.ok().build();
 			}
 			else{
-				return Response.status(Response.Status.NOT_FOUND).build();
+				return Response.status(Response.Status.BAD_REQUEST).build();
 			}
 		}		
 }

@@ -1,11 +1,13 @@
 package contact.entity;
+import javax.persistence.*;
 import java.io.Serializable;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
-
+@Entity
+@Table(name="contacts")
 /**
  * A person is a contact with a name, title, and email.
  * title is text to display for this contact in a list of contacts,
@@ -16,6 +18,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class Contact implements Serializable {
 	private static final long serialVersionUID = 1L;
 
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
 	@XmlAttribute
 	private long id;
 	private String name;
@@ -104,8 +108,11 @@ public class Contact implements Serializable {
 		if (! isEmpty( update.getTitle()) ) this.setTitle(update.getTitle()); // empty nickname is ok
 		// other attributes: allow an empty string as a way of deleting an attribute in update (this is hacky)
 		if (update.getName() != null ) this.setName(update.getName()); 
+		else this.setName("");
 		if (update.getEmail() != null) this.setEmail(update.getEmail());
+		else this.setEmail("");
 		if (update.getPhoneNumber() != null ) this.setPhoneNumber(update.getPhoneNumber());
+		else this.setPhoneNumber("");
 	}
 	
 	/**

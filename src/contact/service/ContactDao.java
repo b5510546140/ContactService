@@ -1,72 +1,30 @@
 package contact.service;
-/**
- * @author wat wattanagaroon
- * @version 2014/09/16
- */
-import java.util.ArrayList;
+
 import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
 
 import contact.entity.Contact;
 
-/**
- * Data access object for saving and retrieving contacts.
- * This DAO uses an in-memory list of person.
- * Use DaoFactory to get an instance of this class, such as:
- * dao = DaoFactory.getInstance().getContactDao()
- * 
- * @author jim
- */
-public class ContactDao {
-	private List<Contact> contacts;
-	private AtomicLong nextId;
-	
-	public ContactDao() {
-		contacts = new ArrayList<Contact>();
-		nextId = new AtomicLong(1000L);
-		createTestContact(1);
-	}
-	
-	/** add a single contact with given id for testing. */
-	private void createTestContact(long id) {
-		Contact test = new Contact("Test contact", "Joe Experimental", "none@testing.com" ,"012345");
-		System.out.println("create");
-		test.setId(id);
-		contacts.add(test);
-	}
+public interface ContactDao {
 
 	/** Find a contact by ID in contacts.
 	 * @param the id of contact to find
 	 * @return the matching contact or null if the id is not found
 	 */
-	public Contact find(long id) {
-		for(Contact c : contacts) 
-			if (c.getId() == id) return c;
-		return null;
-	}
+	public abstract Contact find(long id);
+
 	/**
 	 * find all of the contact
 	 * @return collection of all contact
 	 */
-	public List<Contact> findAll() {
-		return java.util.Collections.unmodifiableList(contacts);
-	}
+	public abstract List<Contact> findAll();
 
 	/**
 	 * Delete a saved contact.
 	 * @param id the id of contact to delete
 	 * @return true if contact is deleted, false otherwise.
 	 */
-	public boolean delete(long id) {
-		for(int k=0; k<contacts.size(); k++) {
-			if (contacts.get(k).getId() == id) {
-				contacts.remove(k);
-				return true;
-			}
-		}
-		return false;
-	}
-	
+	public abstract boolean delete(long id);
+
 	/**
 	 * Save or replace a contact.
 	 * If the contact.id is 0 then it is assumed to be a
@@ -77,17 +35,7 @@ public class ContactDao {
 	 * @param contact the contact to save or replace.
 	 * @return true if saved successfully
 	 */
-	public boolean save(Contact contact) {
-		if (contact.getId() == 0) {
-			contact.setId( getUniqueId() );
-			return contacts.add(contact);
-		}
-		// check if this contact is already in persistent storage
-		Contact other  = find(contact.getId());
-		if (other == contact) return true;
-		if ( other != null ) contacts.remove(other);
-		return contacts.add(contact);
-	}
+	public abstract boolean save(Contact contact);
 
 	/**
 	 * Update a Contact.  Only the non-null fields of the
@@ -95,38 +43,17 @@ public class ContactDao {
 	 * @param update update info for the contact.
 	 * @return true if the update is applied successfully.
 	 */
-	public boolean update(Contact update) {
-		Contact contact = find(update.getId());
-		if (contact == null) return false;
-		contact.applyUpdate(update);
-		save(contact);
-		return true;
-	}
-	
-	/**
-	 * Get a unique contact ID.
-	 * @return unique id not in persistent storage
-	 */
-	private synchronized long getUniqueId() {
-		long id = nextId.getAndAdd(1L);
-		while( id < Long.MAX_VALUE ) {	
-			if (find(id) == null) return id;
-			id = nextId.getAndAdd(1L);
-		}
-		return id; // this should never happen
-	}
+	public abstract boolean update(Contact update);
+
 	/**
 	 * search the contact from title
 	 * @param q word to find in title
 	 * @return contact that find from title
 	 */
-	public Contact searchTitle(String q){
-		for(int i=0;i<contacts.size();i++){
-			CharSequence ch = q;
-			if(contacts.get(i).getTitle().contains(ch)){
-				return contacts.get(i);
-			}
-		}
-		return new Contact();
-	}
+	public abstract Contact searchTitle(String q);
+	
+	public abstract boolean isExisted(long id);
+	
+	List<Contact> findByTitle(String titlestr);
+
 }

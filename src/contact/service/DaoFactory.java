@@ -1,27 +1,26 @@
 package contact.service;
 
-/**
- * Manage instances of Data Access Objects (DAO) used in the app.
- * This enables you to change the implementation of the actual ContactDao
- * without changing the rest of your application.
- * 
- * @author jim
- */
-public class DaoFactory {
-	// singleton instance of this factory
+import contact.service.jpa.JpaDaoFactory;
+import contact.service.mem.MemDaoFactory;
+
+public abstract class DaoFactory {
+
 	private static DaoFactory factory;
-	private ContactDao daoInstance;
-	
-	private DaoFactory() {
-		daoInstance = new ContactDao();
-	}
-	
+	protected ContactDao daoInstance;
+
 	public static DaoFactory getInstance() {
-		if (factory == null) factory = new DaoFactory();
+		if (factory == null) factory = new MemDaoFactory();
 		return factory;
 	}
-	
+
+	public DaoFactory() {
+		super();
+	}
+
 	public ContactDao getContactDao() {
 		return daoInstance;
 	}
+	
+	public abstract void shutdown();
+
 }

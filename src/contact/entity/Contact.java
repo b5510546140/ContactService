@@ -13,7 +13,9 @@ import javax.xml.bind.annotation.XmlRootElement;
  * title is text to display for this contact in a list of contacts,
  * such as a nickname or company name.
  */
-@XmlRootElement(name="contacts")
+//JIM this should be name="contact"
+//@XmlRootElement(name="contacts")
+@XmlRootElement(name="contact")
 @XmlAccessorType(XmlAccessType.FIELD)
 public class Contact implements Serializable {
 	private static final long serialVersionUID = 1L;

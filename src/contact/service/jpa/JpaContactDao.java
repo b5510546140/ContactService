@@ -96,6 +96,7 @@ public class JpaContactDao implements ContactDao {
 	 */
 	@Override
 	public boolean delete(long id) {
+//TODO you should use try - catch in case it fails. See save() for example.
 		em.getTransaction().begin();
 		Contact conObj = em.find(Contact.class,id);
 		em.remove(conObj);
@@ -127,6 +128,7 @@ public class JpaContactDao implements ContactDao {
 	 */
 	@Override
 	public boolean update(Contact update) {
+//TODO you should use try - catch like in save(), in case it fails.
 		em.getTransaction().begin();
 		Contact contact = em.find(Contact.class,update.getId());
 		em.merge(update);

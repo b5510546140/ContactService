@@ -1,5 +1,9 @@
 package contact.entity;
 import javax.persistence.*;
+/**
+ * @author wat wattanagaroon
+ * @version 2014/09/27
+ */
 import java.io.Serializable;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -7,14 +11,12 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 @Entity
-@Table(name="contacts")
+@Table(name="contact")
 /**
  * A person is a contact with a name, title, and email.
  * title is text to display for this contact in a list of contacts,
  * such as a nickname or company name.
  */
-//JIM this should be name="contact"
-//@XmlRootElement(name="contacts")
 @XmlRootElement(name="contact")
 @XmlAccessorType(XmlAccessType.FIELD)
 public class Contact implements Serializable {

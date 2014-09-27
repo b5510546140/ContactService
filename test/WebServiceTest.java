@@ -15,7 +15,11 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import contact.main.JettyMain;
-
+/**
+ * 
+ * @author wat wattanagaroon
+ * @version 2014/09/27
+ */
 
 public class WebServiceTest {
 
@@ -26,7 +30,6 @@ public class WebServiceTest {
 	 public static void doFirst() throws Exception {
 		 // Start the Jetty server. 
 		 serviceUrl = JettyMain.startServer( 8080 );
-		 //System.out.println(serviceUrl);
 		 client = new HttpClient();
 		 client.start();
 	 }
@@ -53,7 +56,7 @@ public class WebServiceTest {
 
 	 @Test
 	 public void testPostPass() throws InterruptedException, ExecutionException, TimeoutException {
-		 StringContentProvider content = new StringContentProvider("<contact id=\"100\">" +
+		 StringContentProvider content = new StringContentProvider("<contact id=\"123\">" +
 					"<title>Titile of test post</title>" +
 					"<name>Full Name</name>" +
 					"<email>wat wattanagaroon</email>" +
@@ -65,7 +68,7 @@ public class WebServiceTest {
 		 ContentResponse res = request.send();
 		
 		 assertEquals("POST complete ,should response 201 Created", Status.CREATED.getStatusCode(), res.getStatus());
-		 res = client.GET(serviceUrl+"contacts/555");
+		 res = client.GET(serviceUrl+"contacts/123");
 		 assertTrue("Check by using GET ,request posted id.", !res.getContentAsString().isEmpty() );
 	 }
 	 
@@ -101,32 +104,32 @@ public class WebServiceTest {
 		 assertEquals("PUT Success should response 200 OK", Status.OK.getStatusCode(), res.getStatus());
 	 }
 	 
-//	 @Test
-//	 public void testPutFail() throws InterruptedException, TimeoutException, ExecutionException {
-//		 StringContentProvider content = new StringContentProvider("<contact id=\"100\">" +
-//					"<title>Titile of test post</title>" +
-//					"<name>Full Name</name>" +
-//					"<email>wat wattanagaroon</email>" +
-//					"<phoneNumber>555555555</phoneNumber>"+
-//					"</contact>");
-//		 Request request = client.newRequest(serviceUrl+"contacts/100");
-//		 request.method(HttpMethod.PUT);
-//		 request.content(content, "application/xml");
-//		 ContentResponse res = request.send();
-//		 
-//		 assertEquals("PUT Fail should response 400 BAD REQUEST", Status.BAD_REQUEST.getStatusCode(), res.getStatus());
-//	 }
+	 @Test
+	 public void testPutFail() throws InterruptedException, TimeoutException, ExecutionException {
+		 StringContentProvider content = new StringContentProvider("<contact id=\"101\">" +
+					"<title>Titile of test post</title>" +
+					"<name>Full Name</name>" +
+					"<email>wat wattanagaroon</email>" +
+					"<phoneNumber>555555555</phoneNumber>"+
+					"</contact>");
+		 Request request = client.newRequest(serviceUrl+"contacts/101");
+		 request.method(HttpMethod.PUT);
+		 request.content(content, "application/xml");
+		 ContentResponse res = request.send();
+		 
+		 assertEquals("PUT Fail should response 400 BAD REQUEST", Status.BAD_REQUEST.getStatusCode(), res.getStatus());
+	 }
 	 
-//	 @Test
-//	 public void testDeletePass() throws InterruptedException, ExecutionException, TimeoutException {
-//		 Request request = client.newRequest(serviceUrl+"contacts/100");
-//		 request.method(HttpMethod.DELETE);
-//		 ContentResponse res = request.send();
-//		 
-//		 assertEquals("DELETE success should response 200 OK", Status.OK.getStatusCode(), res.getStatus());
-//		 res = client.GET(serviceUrl+"contacts/555");
-//		 assertTrue("Really deleted", res.getContentAsString().isEmpty());
-//	 }
+	 @Test
+	 public void testDeletePass() throws InterruptedException, ExecutionException, TimeoutException {
+		 Request request = client.newRequest(serviceUrl+"contacts/123");
+		 request.method(HttpMethod.DELETE);
+		 ContentResponse res = request.send();
+		 
+		 assertEquals("DELETE success should response 200 OK", Status.OK.getStatusCode(), res.getStatus());
+		 res = client.GET(serviceUrl+"contacts/123");
+		 assertTrue("Really deleted", res.getContentAsString().isEmpty());
+	 }
 	 
 	 @Test
 	 public void testDeleteFail() throws InterruptedException, TimeoutException, ExecutionException {

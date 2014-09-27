@@ -35,14 +35,12 @@ import contact.service.mem.MemContactDao;
 @Path("/contacts")
 @Singleton
 public class ContractResource {
-
-		private Map<String, String> greetings = new HashMap<>();
+	
 		private ContactDao dao;
 		@Context
 		UriInfo uriInfo;
 		
 		public ContractResource(){
-			System.out.println("contact resource constructor");
 			dao = DaoFactory.getInstance().getContactDao();
 		}
 		/**
@@ -105,9 +103,7 @@ public class ContractResource {
 		public Response postContact(JAXBElement<Contact> contact) {
 			Contact c = (Contact)contact.getValue();
 			if(dao.find(c.getId()) == null){
-				System.out.println("null");
 				boolean success = dao.save(c);
-				System.out.println(success);
 				if(success){
 					try {
 						return Response.created(new URI("localhost:8080/contacts/" + c.getId())).type(MediaType.APPLICATION_XML).entity(contact).build();
@@ -130,26 +126,6 @@ public class ContractResource {
 		 * @return response if it can update response ok
 		 * @return response bad request if it Contact dao can't update
 		 */
-//		@PUT
-//		@Path ("{id}")
-//		public Response updateContact(JAXBElement<Contact> element , @PathParam ("id") long id){
-//			Contact contact = element.getValue();
-//			contact.setId(id);
-//			System.out.println(dao.isExisted(id));
-//			if(!dao.isExisted(id)){
-//				if(contact.getId() != 0 && contact.getId() != id ){
-//					return Response.status( Response.Status.BAD_REQUEST ).build();
-//				}
-//				else
-//				{
-//					contact.setId( id );
-//					dao.update( contact );
-//					return Response.ok().build();
-//				}
-//			}
-//			return Response.status(Response.Status.NOT_FOUND).build();
-//		}
-		
 		@PUT
 		@Path ("{id}")
 		public Response updateContact(JAXBElement<Contact> element , @PathParam ("id") long id){
@@ -159,12 +135,9 @@ public class ContractResource {
 				return Response.ok(contact).build();
 			}
 			else{
-				return Response.status(Response.Status.NOT_FOUND).build();
+				return Response.status(Response.Status.BAD_REQUEST).build();
 			}
 		}
-		
-		
-		
 		
 		/**
 		 * delete the contact from id.

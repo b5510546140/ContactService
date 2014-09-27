@@ -51,9 +51,17 @@ public interface ContactDao {
 	 * @return contact that find from title
 	 */
 	public abstract Contact searchTitle(String q);
-	
+	/**
+	 * search is that is exist or not
+	 * @param id of contact that want to find
+	 * @return true if find contact
+	 */
 	public abstract boolean isExisted(long id);
-	
-	List<Contact> findByTitle(String titlestr);
+	/**
+	 * find from title
+	 * @param titlestr
+	 * @return
+	 */
+	public abstract List<Contact> findByTitle(String titlestr);
 
 }

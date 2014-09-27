@@ -66,14 +66,12 @@ public class JpaContactDao implements ContactDao {
 	 */
 	@Override
 	public List<Contact> findAll() {
-//		EntityTransaction enti = em.getTransaction();
-		System.out.println("Jpa");
+
 		Query query = em.createQuery(
 		           "SELECT c FROM Contact c" );
 		List results = query.getResultList();
 		return results;
-		
-//		return null;
+
 	}
 
 	/**
@@ -96,7 +94,7 @@ public class JpaContactDao implements ContactDao {
 	 */
 	@Override
 	public boolean delete(long id) {
-//TODO you should use try - catch in case it fails. See save() for example.
+
 		em.getTransaction().begin();
 		Contact conObj = em.find(Contact.class,id);
 		em.remove(conObj);

@@ -3,6 +3,8 @@ package contact.service.mem;
 import java.io.File;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -13,58 +15,39 @@ import contact.entity.Contact;
 import contact.entity.Contacts;
 import contact.service.ContactDao;
 import contact.service.DaoFactory;
+import contact.service.jpa.JpaDaoFactory;
 
 /**
  * MemDaoFactory is a factory for getting instances of entity DAO object
  * that use memory-based persistence, which isn't really persistence at all!
  * 
  * @see contact.service.DaoFactory
- * @version 2014.09.19
- * @author jim
+ * @version 2014/09/27
+ * @author jim and wat wattanagaroon
  */
 public class MemDaoFactory extends DaoFactory {
 	/** instance of the entity DAO */
 	private ContactDao daoInstance;
-	public static final String EXTERNAL_FILE = "/tmp/contacts.xml";
-	private Map<Long, Contact> contacts;
-	
+	public static final String EXTERNAL_FILE = "/tmp/contactstemp.xml";
+	private static Logger logger;
+	static {
+		logger = Logger.getLogger(MemDaoFactory.class.getName());
+	}
 	public MemDaoFactory() {
-//		this.createNotExistFile();
+
 		daoInstance = new MemContactDao();
 		this.loadFile();
-	}
-	
-	/**
-	 * TODO This method is not necessary. 
-         * Fix the logic in loadFile (check if file exists) and delete this method.
-	 */
-	private void createNotExistFile() {
-		File file = new File(EXTERNAL_FILE);
-		// always save to file
-		//if(!file.exists()){
-			try {
-				JAXBContext context = JAXBContext.newInstance( Contacts.class );
-				File outputFile = new File( EXTERNAL_FILE );
-				Marshaller marshaller = context.createMarshaller();	
-				Contacts contacts = new Contacts();
-// don't replace the contacts list
-//				contacts.setContacts(new ArrayList<Contact>());
-				marshaller.marshal( contacts, outputFile );
-			} catch ( JAXBException e ) {
-				e.printStackTrace();
-			}
-		//}
-		
 	}
 
 	@Override
 	public ContactDao getContactDao() {
 		return daoInstance;
 	}
-	
+	/**
+	 * Shut down the server and save all of data to file
+	 */
 	@Override
 	public void shutdown() {
-		System.out.println("Shutdown");
 		List<Contact> list = getContactDao().findAll();
 		Contacts exportListOfContact = new Contacts();
 		exportListOfContact.setContacts(list);
@@ -76,37 +59,56 @@ public class MemDaoFactory extends DaoFactory {
 		} catch ( JAXBException e ) {
 			e.printStackTrace();
 		}
-
-		////
 		
 	}
-	
+	/**
+	 * load file and if file don't exist create a new file
+	 */
 	public void loadFile() {
 		File inputFile = new File( EXTERNAL_FILE );
-		if (! inputFile.exists() ) return;
-		try {
+		if(!inputFile.exists()){
+			try {
+				JAXBContext context = JAXBContext.newInstance( Contacts.class );
+				File outputFile = new File( EXTERNAL_FILE );
+				Marshaller marshaller = context.createMarshaller();	
+				Contacts contacts = new Contacts();
+				marshaller.marshal( contacts, outputFile );
+			} catch ( JAXBException e ) {
+				e.printStackTrace();
+			}
+		}
 			
-			JAXBContext context = JAXBContext.newInstance( Contacts.class ) ;
+			JAXBContext context = null;
+			try {
+				context = JAXBContext.newInstance( Contacts.class );
+			} catch (JAXBException e) {
+				logger.log(Level.SEVERE,e+"");
+			}
 
-			Unmarshaller unmarshaller = context.createUnmarshaller();	
-			Contacts importContacts = (Contacts) unmarshaller.unmarshal( inputFile );
+			Unmarshaller unmarshaller = null;
+			try {
+				unmarshaller = context.createUnmarshaller();
+			} catch (JAXBException e) {
+				logger.log(Level.SEVERE,e+"");
+			}	
+			Contacts importContacts = null;
+			try {
+				importContacts = (Contacts) unmarshaller.unmarshal( inputFile );
+			} catch (JAXBException e) {
+				logger.log(Level.SEVERE,e+"");
+			}
 			if ( importContacts.getContacts() == null ) {
 				return;
 			}
 			for ( Contact contact : importContacts.getContacts() ) {
-//JIM: You should let the ContactDao do this
-// Its the responsibility of DAO to manage contacts!
-//				contacts.put( contact.getId(), contact );
+
 				daoInstance.save( contact );
 			}
-//JIM: don't catch "Exception"
-//1) catch specific exceptions, not general ones.
-//2) log it and handle gracefully.  Not printStackTrace.
-		} catch ( Exception e ) {
-			e.printStackTrace();
-		} 
 	}
-	
+	/**
+	 * test of create empty file
+	 * @param args
+	 */
 	public static void main(String[] args) {
 		MemDaoFactory factory = new MemDaoFactory();
 		factory.loadFile();

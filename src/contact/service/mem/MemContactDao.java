@@ -3,16 +3,10 @@ package contact.service.mem;
  * @author wat wattanagaroon
  * @version 2014/09/16
  */
-import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
-
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
 
 import contact.entity.Contact;
 import contact.service.ContactDao;
@@ -34,13 +28,13 @@ public class MemContactDao implements ContactDao  {
 	public MemContactDao() {
 		contacts = new ArrayList<Contact>();
 		nextId = new AtomicLong(1000L);
-		//createTestContact(1);
+		createTestContact(100);
+		createTestContact(123);
 	}
 	
 	/** add a single contact with given id for testing. */
 	private void createTestContact(long id) {
 		Contact test = new Contact("Test contact", "Joe Experimental", "none@testing.com" ,"012345");
-		System.out.println("create");
 		test.setId(id);
 		contacts.add(test);
 	}
@@ -59,7 +53,6 @@ public class MemContactDao implements ContactDao  {
 	 * @return collection of all contact
 	 */
 	public List<Contact> findAll() {
-		System.out.println("mem");
 		return java.util.Collections.unmodifiableList(contacts);
 	}
 
@@ -72,7 +65,6 @@ public class MemContactDao implements ContactDao  {
 		for(int k=0; k<contacts.size(); k++) {
 			if (contacts.get(k).getId() == id) {
 				contacts.remove(k);
-				System.out.println("Delete");
 				return true;
 			}
 		}
@@ -141,7 +133,11 @@ public class MemContactDao implements ContactDao  {
 		}
 		return new Contact();
 	}
-
+	/**
+	 * find list of contact from title
+	 * @param titlestr title that use to find in the list
+	 * @return list ofcontact that find
+	 */
 	@Override
 	public List<Contact> findByTitle(String titlestr) {
 		List<Contact> list = new ArrayList<Contact>();
@@ -153,6 +149,11 @@ public class MemContactDao implements ContactDao  {
 		}
 		return list;
 	}
+	/**
+	 * search is that is exist or not
+	 * @param id of contact that want to find
+	 * @return true if find contact
+	 */
 	@Override
 	public boolean isExisted(long id){
 			for(Contact c : contacts) 

@@ -39,6 +39,14 @@ public class Contact implements Serializable {
 		this.email = email;
 		this.phoneNumber = phoneNumber;
 	}
+	
+	public Contact(int id,String title, String name, String email, String phoneNumber ) {
+		this.id = id;
+		this.title = title;
+		this.name = name;
+		this.email = email;
+		this.phoneNumber = phoneNumber;
+	}
 
 	public Contact(long id) {
 		this.id = id;

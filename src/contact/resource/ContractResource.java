@@ -4,11 +4,10 @@
  * @version 2014/09/16
  */
 package contact.resource;
+
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.inject.Singleton;
 import javax.ws.rs.Consumes;
@@ -21,139 +20,202 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import javax.xml.bind.JAXBElement;
 
+import org.eclipse.jetty.client.util.StringContentProvider;
+import org.junit.Test;
+
 import contact.entity.Contact;
 import contact.service.ContactDao;
 import contact.service.DaoFactory;
-import contact.service.mem.MemContactDao;
 
 @Path("/contacts")
 @Singleton
 public class ContractResource {
-	
-		private ContactDao dao;
-		@Context
-		UriInfo uriInfo;
-		
-		public ContractResource(){
-			dao = DaoFactory.getInstance().getContactDao();
+
+	private ContactDao dao;
+	@Context
+	UriInfo uriInfo;
+
+	public ContractResource() {
+		dao = DaoFactory.getInstance().getContactDao();
+	}
+
+	/**
+	 * get all of contact
+	 * 
+	 * @return
+	 */
+	public Response getContact() {
+		System.out.println(uriInfo.getRequestUri());
+		System.out.println(uriInfo.getAbsolutePath());
+
+		GenericEntity<List<Contact>> GenericEn = new GenericEntity<List<Contact>>(
+				dao.findAll()) {
+		};
+		return Response.ok(GenericEn).build();
+	}
+
+	/**
+	 * get contact from id
+	 * 
+	 * @param id
+	 *            that want to find contact
+	 * @return contact from id
+	 */
+	@GET
+	@Path("{id}")
+	@Produces(MediaType.APPLICATION_XML)
+	public Response getContact(@PathParam("id") long id,
+			@Context Request request) {
+		Response.ResponseBuilder rb = null;
+		Contact contact = dao.find(id);
+		EntityTag etag = new EntityTag(contact.hashCode() + "");
+		// Verify if it matched with etag available in http request
+		rb = request.evaluatePreconditions(etag);
+		if (rb != null) {
+			return rb.tag(etag).build();
 		}
-		/**
-		 * get all of contact
-		 * @return
-		 */
-		public Response getContact( ) {
-				System.out.println(uriInfo.getRequestUri());
-				System.out.println(uriInfo.getAbsolutePath());
-				
-				GenericEntity<List<Contact>> GenericEn = new GenericEntity<List<Contact>>(dao.findAll()){};
-	            return Response.ok(GenericEn).build(); 
-	            }
-		
-		/**
-		 * get contact from id
-		 * @param id that want to find contact
-		 * @return contact from id
-		 */
-		@GET
-	    @Path("{id}")
-		@Produces( MediaType.APPLICATION_XML )
-		public Response getContact( @PathParam("id") long id ) {
-	            Contact contact = dao.find(id);
-	            if(contact == null){
-	            	return Response.status(Response.Status.NO_CONTENT).build();
-	            }
-	            return Response.ok(contact).build(); 
-	            }
-		/**
-		 * get contact from some word of title
-		 * @param q string that want to find contact in title
-		 * @return contact
-		 */
-		@GET
-		@Produces( MediaType.APPLICATION_XML )
-		public Response getContact( @QueryParam("q") String q ) {
-				if(q == null){
-					 return getContact(); 
-				}
-				else{
-					Contact contact = dao.searchTitle(q);
-					if(contact == null){
-						return Response.status(Response.Status.NO_CONTENT).build(); 
-					}
-					return Response.ok(contact).build(); 
-				}
-	    	}
-		
-		/**
-		 * post new contact to the list of ContactDao
-		 * @param element of the contact that want to add
-		 * @param uriInfo 
-		 * @return response if contact can save return created,
-		 * @return if it can't save return bad request
-		 * @return if Dao don't find contact id it is conflict
-		 */
-		@POST
-		@Consumes({ MediaType.APPLICATION_XML})
-		public Response postContact(JAXBElement<Contact> contact) {
-			Contact c = (Contact)contact.getValue();
-			if(dao.find(c.getId()) == null){
-				boolean success = dao.save(c);
-				if(success){
-					try {
-						return Response.created(new URI("localhost:8080/contacts/" + c.getId())).type(MediaType.APPLICATION_XML).entity(contact).build();
-					} catch (URISyntaxException e) {}
-				}
-				return Response.status(Response.Status.BAD_REQUEST).build();
+
+		// If rb is null then either it is first time request; or resource is
+		// modified
+		// Get the updated representation and return with Etag attached to it
+		rb = Response.ok(contact).tag(etag);
+		return rb.build();
+
+		// if(contact == null){
+		// return Response.status(Response.Status.NO_CONTENT).tag(etag).build();
+		// }
+		// return Response.ok(contact).tag(etag).build();
+	}
+
+	/**
+	 * get contact from some word of title
+	 * 
+	 * @param q
+	 *            string that want to find contact in title
+	 * @return contact
+	 */
+	@GET
+	@Produces(MediaType.APPLICATION_XML)
+	public Response getContact(@QueryParam("q") String q) {
+		if (q == null) {
+			return getContact();
+		} else {
+			Contact contact = dao.searchTitle(q);
+			if (contact == null) {
+				return Response.status(Response.Status.NO_CONTENT).build();
 			}
-			else{
-				return Response.status(Response.Status.CONFLICT).location(uriInfo.getRequestUri()).entity(contact).build();
-			}
-			
+			return Response.ok(contact).build();
 		}
-		
-		
-		
-		/**
-		 * use to update some contact
-		 * @param element that want to edit
-		 * @param id that want to edit
-		 * @return response if it can update response ok
-		 * @return response bad request if it Contact dao can't update
-		 */
-		@PUT
-		@Path ("{id}")
-		public Response updateContact(JAXBElement<Contact> element , @PathParam ("id") long id){
-			Contact contact = element.getValue();
-			contact.setId(id);
-			if(dao.update(contact)){
-				return Response.ok(contact).build();
+	}
+
+	/**
+	 * post new contact to the list of ContactDao
+	 * 
+	 * @param element
+	 *            of the contact that want to add
+	 * @param uriInfo
+	 * @return response if contact can save return created,
+	 * @return if it can't save return bad request
+	 * @return if Dao don't find contact id it is conflict
+	 */
+	@POST
+	@Consumes({ MediaType.APPLICATION_XML })
+	public Response postContact(JAXBElement<Contact> contact) {
+		Contact c = (Contact) contact.getValue();
+		EntityTag etag = new EntityTag(contact.hashCode() + "");
+
+		if (dao.find(c.getId()) == null) {
+			boolean success = dao.save(c);
+			if (success) {
+				try {
+					return Response
+							.created(
+									new URI("localhost:8080/contacts/"
+											+ c.getId()))
+							.type(MediaType.APPLICATION_XML).entity(contact)
+							.tag(etag).build();
+				} catch (URISyntaxException e) {
+				}
 			}
-			else{
-				return Response.status(Response.Status.BAD_REQUEST).build();
-			}
+			return Response.status(Response.Status.BAD_REQUEST).build();
+		} else {
+			return Response.status(Response.Status.CONFLICT)
+					.location(uriInfo.getRequestUri()).entity(contact).build();
 		}
+
+	}
+
+	/**
+	 * use to update some contact
+	 * 
+	 * @param element
+	 *            that want to edit
+	 * @param id
+	 *            that want to edit
+	 * @return response if it can update response ok
+	 * @return response bad request if it Contact dao can't update
+	 */
+	@PUT
+	@Path("{id}")
+	@Consumes({MediaType.APPLICATION_XML , MediaType.TEXT_XML})
+	public Response updateContact(JAXBElement<Contact> element,
+			@PathParam("id") long id, @Context Request request) {
+		Contact contact = element.getValue();
+		Contact contactfind = dao.find(id);
+		contact.setId(id);
 		
-		/**
-		 * delete the contact from id.
-		 * @param id that want to delete
-		 * @return response if it can delete
-		 * @return not found if it can't delete
-		 */
-		@DELETE
-		@Path("{id}")
-		public Response deleteContact(@PathParam ("id") long id){
-			if(dao.delete(id)){
-				return Response.ok().build();
-			}
-			else{
-				return Response.status(Response.Status.BAD_REQUEST).build();
-			}
-		}		
+		if (contactfind == null)
+			return Response.status(Response.Status.NOT_FOUND).build();
+
+		Response.ResponseBuilder rb = null;
+		EntityTag etag = new EntityTag(contactfind.hashCode() + "");
+		// Verify if it matched with etag available in http request
+		rb = request.evaluatePreconditions(etag);
+		if (rb != null) {
+			return rb.tag(etag).build();
+		}
+		if (dao.update(contact)) {
+			return Response.ok(contact).tag(etag).build();
+		} else {
+			return Response.status(Response.Status.PRECONDITION_FAILED).build();
+		}
+	}
+
+	/**
+	 * delete the contact from id.
+	 * 
+	 * @param id
+	 *            that want to delete
+	 * @return response if it can delete
+	 * @return not found if it can't delete
+	 */
+	@DELETE
+	@Path("{id}")
+	public Response deleteContact(@PathParam("id") long id,
+			@Context Request request) {
+		System.out.println("aaaaa");
+		Contact contact = dao.find(id);
+		Response.ResponseBuilder rb = null;
+		EntityTag etag = new EntityTag(contact.hashCode() + "");
+		// Verify if it matched with etag available in http request
+		rb = request.evaluatePreconditions(etag);
+		if (rb != null) {
+			return rb.tag(etag).build();
+		}
+		if (dao.delete(id)) {
+			return Response.ok().tag(etag).build();
+		} else {
+			return Response.status(Response.Status.BAD_REQUEST).tag(etag)
+					.build();
+		}
+	}
+		
 }
-	            

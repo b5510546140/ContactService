@@ -63,5 +63,7 @@ public interface ContactDao {
 	 * @return
 	 */
 	public abstract List<Contact> findByTitle(String titlestr);
+	
+	public abstract void removeAll();
 
 }

@@ -133,6 +133,13 @@ public class JpaContactDao implements ContactDao {
 		em.getTransaction().commit();
 		return true;
 	}
+	
+	@Override
+	public void removeAll() {
+		for ( Contact contact : findAll() ) {
+			delete( contact.getId() );
+		}
+	}
 
 	@Override
 	public Contact searchTitle(String q) {

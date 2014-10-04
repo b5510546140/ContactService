@@ -29,6 +29,8 @@ public class MemContactDao implements ContactDao  {
 		contacts = new ArrayList<Contact>();
 		nextId = new AtomicLong(1000L);
 		createTestContact(100);
+		createTestContact(101);
+		createTestContact(102);
 		createTestContact(123);
 	}
 	
@@ -160,5 +162,12 @@ public class MemContactDao implements ContactDao  {
 				if (c.getId() == id) return true;
 			return false;
 		}
+	
+	@Override
+	public void removeAll() {
+		for ( Contact contact : findAll() ) {
+			delete( contact.getId() );
+		}
 	}
+}
 

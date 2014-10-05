@@ -12,10 +12,10 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlRootElement(name="contacts")
 @XmlAccessorType(XmlAccessType.FIELD)
-public class Contacts {
-	
+public class Contacts extends Md5{
+
 	@XmlElement(name="contact")
-    private List<Contact> contactsList;
+	private List<Contact> contactsList;
 
 	public List<Contact> getContacts() {
 		return contactsList;
@@ -24,5 +24,13 @@ public class Contacts {
 	public void setContacts( List<Contact> contactsList ) {
 		this.contactsList = contactsList;
 	}
-	
+
+	@Override
+	public String getMd5() {
+		StringBuilder data = new StringBuilder();
+		for ( Contact c : getContacts() ) {
+			data.append( c.getMd5() );
+		}
+		return super.digest( data.toString() );
+	}
 }

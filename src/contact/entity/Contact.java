@@ -1,5 +1,6 @@
 package contact.entity;
 import javax.persistence.*;
+
 /**
  * @author wat wattanagaroon
  * @version 2014/09/27
@@ -19,7 +20,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlRootElement(name="contact")
 @XmlAccessorType(XmlAccessType.FIELD)
-public class Contact implements Serializable {
+public class Contact extends Md5 implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	@Id
@@ -30,16 +31,16 @@ public class Contact implements Serializable {
 	private String title;
 	private String email;
 	private String phoneNumber;
-	
+
 	public Contact() { }
-	
+
 	public Contact(String title, String name, String email, String phoneNumber ) {
 		this.title = title;
 		this.name = name;
 		this.email = email;
 		this.phoneNumber = phoneNumber;
 	}
-	
+
 	public Contact(int id,String title, String name, String email, String phoneNumber ) {
 		this.id = id;
 		this.title = title;
@@ -51,7 +52,7 @@ public class Contact implements Serializable {
 	public Contact(long id) {
 		this.id = id;
 	}
-  
+
 	public String getName() {
 		return name;
 	}
@@ -87,16 +88,16 @@ public class Contact implements Serializable {
 	public String getPhoneNumber() {
 		return phoneNumber;
 	}
-	
+
 	public void setPhoneNumber(String phoneNumber) {
 		this.phoneNumber = phoneNumber;
 	}
-	
+
 	@Override
 	public String toString() {
 		return String.format("[%ld] %s (%s)", id, name, title);
 	}
-	
+
 	/** Two contacts are equal if they have the same id,
 	 * even if other attributes differ.
 	 * @param other another contact to compare to this one.
@@ -106,7 +107,7 @@ public class Contact implements Serializable {
 		Contact contact = (Contact) other;
 		return contact.getId() == this.getId();
 	}
-	
+
 	/**
 	 * Update this contact's data from another Contact.
 	 * The id field of the update must either be 0 or the same value as this contact!
@@ -126,7 +127,7 @@ public class Contact implements Serializable {
 		if (update.getPhoneNumber() != null ) this.setPhoneNumber(update.getPhoneNumber());
 		else this.setPhoneNumber("");
 	}
-	
+
 	/**
 	 * Test if a string is null or only whitespace.
 	 * @param arg the string to test
@@ -134,6 +135,12 @@ public class Contact implements Serializable {
 	 */
 	private static boolean isEmpty(String arg) {
 		return arg == null || arg.matches("\\s*");
+	}
+
+	@Override
+	public String getMd5() {
+		String data = (getId() + getTitle() + getName() + getEmail() + getPhoneNumber());
+		return super.digest( data );
 	}
 
 }

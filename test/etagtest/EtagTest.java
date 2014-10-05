@@ -20,17 +20,12 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import contact.entity.Contact;
 import contact.main.JettyMain;
 import contact.service.ContactDao;
 import contact.service.DaoFactory;
 
 public class EtagTest {
 	private static ContactDao dao = DaoFactory.getInstance().getContactDao();;
-	 private static String uri;
-	private static Contact contacttest1;
-	private static Contact contacttest2;
-	private static Contact contacttest3;
 	private static final int PORT = 8080;
 	private HttpClient client;
 	private static String serviceUrl;
@@ -39,11 +34,8 @@ public class EtagTest {
 	 */
 	@BeforeClass
 	public static void doFirst( ) {
-		serviceUrl = JettyMain.startServer(8080);
+		serviceUrl = JettyMain.startServer(PORT);
 		serviceUrl += "contacts/";
-		contacttest1 = new Contact( "contact1", "Joe Contact", "joe@microsoft.com", "0123456789" );
-		contacttest2 = new Contact( 1456, "contact2", "Sally Contract", "sally@foo.com", "0123456780" );
-		contacttest3 = new Contact( 4455, "contact2", "Sally Contract", "sally@foo.com", "0123456780" );
 	}
 	
 	/**
@@ -181,6 +173,7 @@ public class EtagTest {
 			assertEquals("Email of Contact 101 is happyoff@hotmail.com", dao
 					.find(101).getEmail(), "happyoff@hotmail.com");
 			etag = ctr.getHeaders().get(HttpHeader.ETAG);
+			System.out.println("Etag from put"+etag);
 			//test with wrong etag
 			request = client.newRequest(serviceUrl + 101)
 					.content(content, "application/xml")
@@ -188,6 +181,25 @@ public class EtagTest {
 			ctr = request.send();
 			assertEquals("PUT not success Should 412 Precondition Failed",
 					Status.PRECONDITION_FAILED.getStatusCode(), ctr.getStatus());
+			//resend it again
+			System.out.println("put"+etag);
+			etag = ctr.getHeaders().get(HttpHeader.ETAG);
+			System.out.println("put"+etag);
+			content = new StringContentProvider(
+					"<contact> <name>wat wattanagaroon</name>"
+							+"<title>lol</title>"
+							+ "<email>testagain@hotmail.com</email>\n"
+							+"<phoneNumber>11111</phoneNumber>"
+							+ "</contact>");
+			request = client.newRequest(serviceUrl + 101)
+					.content(content, "application/xml").header(HttpHeader.IF_MATCH, etag )
+					.method(HttpMethod.PUT);
+			ctr = request.send();
+			assertEquals("PUT success Should response 200 OK",
+					Status.OK.getStatusCode(), ctr.getStatus());
+			assertEquals("Title of Contact 101 is lol", dao
+					.find(101).getTitle(), "lol");
+			
 		} catch (InterruptedException | TimeoutException | ExecutionException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -210,7 +222,7 @@ public class EtagTest {
 			String etag = ctr.getHeaders().get(HttpHeader.ETAG);
 			//first request to delete If-Match not match
 			request = client.newRequest(serviceUrl + 999)
-					.header(HttpHeader.IF_MATCH, "\"" + "sadasdasd" + "\"")
+					.header(HttpHeader.IF_MATCH,  "\"sadasdasd\"")
 					.method(HttpMethod.DELETE);
 			ctr = request.send();
 					assertEquals("DELETE not success 412 Precondition Failed",

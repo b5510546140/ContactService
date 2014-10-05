@@ -76,7 +76,7 @@ public class ContractResource {
 			@Context Request request) {
 		Response.ResponseBuilder rb = null;
 		Contact contact = dao.find(id);
-		EntityTag etag = new EntityTag(contact.hashCode() + "");
+		EntityTag etag = new EntityTag(contact.getMd5());
 		// Verify if it matched with etag available in http request
 		rb = request.evaluatePreconditions(etag);
 		if (rb != null) {
@@ -130,7 +130,7 @@ public class ContractResource {
 	@Consumes({ MediaType.APPLICATION_XML })
 	public Response postContact(JAXBElement<Contact> contact) {
 		Contact c = (Contact) contact.getValue();
-		EntityTag etag = new EntityTag(contact.hashCode() + "");
+		EntityTag etag = new EntityTag(c.getMd5());
 
 		if (dao.find(c.getId()) == null) {
 			boolean success = dao.save(c);
@@ -176,7 +176,7 @@ public class ContractResource {
 			return Response.status(Response.Status.NOT_FOUND).build();
 
 		Response.ResponseBuilder rb = null;
-		EntityTag etag = new EntityTag(contactfind.hashCode() + "");
+		EntityTag etag = new EntityTag(contactfind.getMd5());
 		// Verify if it matched with etag available in http request
 		rb = request.evaluatePreconditions(etag);
 		if (rb != null) {
@@ -201,10 +201,9 @@ public class ContractResource {
 	@Path("{id}")
 	public Response deleteContact(@PathParam("id") long id,
 			@Context Request request) {
-		System.out.println("aaaaa");
 		Contact contact = dao.find(id);
 		Response.ResponseBuilder rb = null;
-		EntityTag etag = new EntityTag(contact.hashCode() + "");
+		EntityTag etag = new EntityTag(contact.getMd5());
 		// Verify if it matched with etag available in http request
 		rb = request.evaluatePreconditions(etag);
 		if (rb != null) {

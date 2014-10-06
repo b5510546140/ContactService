@@ -7,8 +7,9 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.glassfish.jersey.server.ServerProperties;
-import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.eclipse.jetty.servlet.ServletHolder;
+// don't import the implementations
+//import org.eclipse.jetty.servlet.ServletContextHandler;
+//import org.eclipse.jetty.servlet.ServletHolder;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.ServerProperties;
 
@@ -119,6 +120,7 @@ public class JettyMain {
 	 */
 	public static void stopServer(){
 		try {
+// use DaoFactory not MemDaoFactory
 			MemDaoFactory.getInstance().shutdown();
 			server.stop();
 		} catch (Exception e) {}

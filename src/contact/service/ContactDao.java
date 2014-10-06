@@ -45,6 +45,7 @@ public interface ContactDao {
 	 */
 	public abstract boolean update(Contact update);
 
+// Duplicate thod. There is a findBytitle. Why have searchTitle as well?
 	/**
 	 * search the contact from title
 	 * @param q word to find in title

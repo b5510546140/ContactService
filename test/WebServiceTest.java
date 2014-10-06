@@ -15,6 +15,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import contact.main.JettyMain;
+
+// Insufficient Javadoc, even for a test class.
 /**
  * 
  * @author wat wattanagaroon
@@ -49,6 +51,7 @@ public class WebServiceTest {
 	 
 	 @Test
 	 public void testGetFail() throws InterruptedException, ExecutionException, TimeoutException {
+// Assumes contact 12345 doesn't exist in service.
 		 ContentResponse res = client.GET(serviceUrl+"contacts/12345");
 		 assertEquals("The response should be 204 No Content", Status.NO_CONTENT.getStatusCode(), res.getStatus());
 		 assertTrue("Empty Content", res.getContentAsString().isEmpty());
@@ -66,7 +69,9 @@ public class WebServiceTest {
 		 request.method(HttpMethod.POST);
 		 request.content(content, "application/xml");
 		 ContentResponse res = request.send();
-		
+
+// Should test for Location header, then GET the resource.
+		 
 		 assertEquals("POST complete ,should response 201 Created", Status.CREATED.getStatusCode(), res.getStatus());
 		 res = client.GET(serviceUrl+"contacts/123");
 		 assertTrue("Check by using GET ,request posted id.", !res.getContentAsString().isEmpty() );
@@ -74,6 +79,7 @@ public class WebServiceTest {
 	 
 	 @Test
 	 public void testPostFail() throws InterruptedException, TimeoutException, ExecutionException {
+// This assumes there is no contact id 100. But you didn't explicitly delete pre-existing contacts.
 		 StringContentProvider content = new StringContentProvider("<contact id=\"100\">" +
 					"<title>Titile of test post</title>" +
 					"<name>Full Name</name>" +
@@ -100,6 +106,8 @@ public class WebServiceTest {
 		 request.method(HttpMethod.PUT);
 		 request.content(content, "application/xml");
 		 ContentResponse res = request.send();
+
+//Too simple! You should GET the resource and verify it was really updated.
 		 
 		 assertEquals("PUT Success should response 200 OK", Status.OK.getStatusCode(), res.getStatus());
 	 }
@@ -116,12 +124,13 @@ public class WebServiceTest {
 		 request.method(HttpMethod.PUT);
 		 request.content(content, "application/xml");
 		 ContentResponse res = request.send();
-		 
+//Assumes the contact service does NOT have a contact with id 101.
 		 assertEquals("PUT Fail should response 400 BAD REQUEST", Status.BAD_REQUEST.getStatusCode(), res.getStatus());
 	 }
 	 
 	 @Test
 	 public void testDeletePass() throws InterruptedException, ExecutionException, TimeoutException {
+// This *assumes* the contact service has contact with id 123
 		 Request request = client.newRequest(serviceUrl+"contacts/123");
 		 request.method(HttpMethod.DELETE);
 		 ContentResponse res = request.send();

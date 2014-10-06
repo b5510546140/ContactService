@@ -94,7 +94,7 @@ public class JpaContactDao implements ContactDao {
 	 */
 	@Override
 	public boolean delete(long id) {
-
+//ERROR must use try catch and rollback
 		em.getTransaction().begin();
 		Contact conObj = em.find(Contact.class,id);
 		em.remove(conObj);
@@ -134,6 +134,7 @@ public class JpaContactDao implements ContactDao {
 		return true;
 	}
 
+// There is already a method named findByTitle
 	@Override
 	public Contact searchTitle(String q) {
 		// TODO Auto-generated method stub

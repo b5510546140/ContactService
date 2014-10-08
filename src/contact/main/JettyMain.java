@@ -3,6 +3,10 @@ package contact.main;
  * @author wat wattanagaroon
  * @version 2014/09/16
  */
+import java.util.EnumSet;
+
+import javax.servlet.DispatcherType;
+
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -89,7 +93,7 @@ public class JettyMain {
 		
 		holder.setInitParameter(ServerProperties.PROVIDER_PACKAGES, "contact.resource");
 		context.addServlet( holder, "/*" );
-
+		context.addFilter(RequestLogFilter.class, "/*", EnumSet.of(DispatcherType.REQUEST));
 		server.setHandler( context );
 		
 		System.out.println("Starting Jetty server on port " + port);
@@ -119,7 +123,7 @@ public class JettyMain {
 	 */
 	public static void stopServer(){
 		try {
-			MemDaoFactory.getInstance().shutdown();
+			DaoFactory.getInstance().shutdown();
 			server.stop();
 		} catch (Exception e) {}
 	}

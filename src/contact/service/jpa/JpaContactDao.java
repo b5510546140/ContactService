@@ -94,11 +94,22 @@ public class JpaContactDao implements ContactDao {
 	 */
 	@Override
 	public boolean delete(long id) {
-
-		em.getTransaction().begin();
+		EntityTransaction tx = em.getTransaction();
+		try{
+		tx.begin();
 		Contact conObj = em.find(Contact.class,id);
 		em.remove(conObj);
-		em.getTransaction().commit();
+		tx.commit();
+		}catch ( EntityExistsException ex ) {
+
+			if ( tx.isActive() ) {
+				try { 
+					tx.rollback();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}
 		return true;
 	}
 	
@@ -126,11 +137,23 @@ public class JpaContactDao implements ContactDao {
 	 */
 	@Override
 	public boolean update(Contact update) {
-//TODO you should use try - catch like in save(), in case it fails.
-		em.getTransaction().begin();
+		EntityTransaction tx = em.getTransaction();
+		try {
+		tx.begin();
 		Contact contact = em.find(Contact.class,update.getId());
 		em.merge(update);
-		em.getTransaction().commit();
+		tx.commit();
+		}catch ( EntityExistsException ex ) {
+
+			if ( tx.isActive() ) {
+				try { 
+					tx.rollback();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+			
+		}
 		return true;
 	}
 	
@@ -141,11 +164,6 @@ public class JpaContactDao implements ContactDao {
 		}
 	}
 
-	@Override
-	public Contact searchTitle(String q) {
-		// TODO Auto-generated method stub
-		return null;
-	}
 
 	@Override
 	public boolean isExisted(long id) {

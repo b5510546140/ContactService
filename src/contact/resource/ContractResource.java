@@ -28,9 +28,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import javax.xml.bind.JAXBElement;
 
-import org.eclipse.jetty.client.util.StringContentProvider;
-import org.junit.Test;
-
 import contact.entity.Contact;
 import contact.service.ContactDao;
 import contact.service.DaoFactory;
@@ -76,17 +73,21 @@ public class ContractResource {
 			@Context Request request) {
 		Response.ResponseBuilder rb = null;
 		Contact contact = dao.find(id);
+		if (contact == null) return Response.status(Response.Status.NOT_FOUND).build();
 		EntityTag etag = new EntityTag(contact.getMd5());
 		// Verify if it matched with etag available in http request
 		rb = request.evaluatePreconditions(etag);
 		if (rb != null) {
 			return rb.tag(etag).build();
 		}
-
+		Contact contactfind = dao.find(id);
+		if (contactfind == null) {
+			return Response.status(Response.Status.NOT_FOUND).build();
+		}
 		// If rb is null then either it is first time request; or resource is
 		// modified
 		// Get the updated representation and return with Etag attached to it
-		rb = Response.ok(contact).tag(etag);
+		rb = Response.ok(contactfind).tag(etag);
 		return rb.build();
 
 		// if(contact == null){
@@ -108,7 +109,7 @@ public class ContractResource {
 		if (q == null) {
 			return getContact();
 		} else {
-			Contact contact = dao.searchTitle(q);
+			 List<Contact> contact = dao.findByTitle(q);
 			if (contact == null) {
 				return Response.status(Response.Status.NO_CONTENT).build();
 			}
@@ -137,9 +138,8 @@ public class ContractResource {
 			if (success) {
 				try {
 					return Response
-							.created(
-									new URI("localhost:8080/contacts/"
-											+ c.getId()))
+							.created(new
+									URI( uriInfo.getRequestUri()+(c.getId()+"")))
 							.type(MediaType.APPLICATION_XML).entity(contact)
 							.tag(etag).build();
 				} catch (URISyntaxException e) {
@@ -176,14 +176,14 @@ public class ContractResource {
 			return Response.status(Response.Status.NOT_FOUND).build();
 
 		Response.ResponseBuilder rb = null;
+//		 Verify if it matched with etag available in http request
 		EntityTag etag = new EntityTag(contactfind.getMd5());
-		// Verify if it matched with etag available in http request
 		rb = request.evaluatePreconditions(etag);
 		if (rb != null) {
-			return rb.tag(etag).build();
+			return rb.build();
 		}
 		if (dao.update(contact)) {
-			return Response.ok(contact).tag(etag).build();
+			return Response.ok(contact).build();
 		} else {
 			return Response.status(Response.Status.PRECONDITION_FAILED).build();
 		}
@@ -208,6 +208,9 @@ public class ContractResource {
 		rb = request.evaluatePreconditions(etag);
 		if (rb != null) {
 			return rb.tag(etag).build();
+		}
+		if(dao.find(id)==null){
+			return Response.status(Response.Status.NOT_FOUND).tag(etag).build();
 		}
 		if (dao.delete(id)) {
 			return Response.ok().tag(etag).build();

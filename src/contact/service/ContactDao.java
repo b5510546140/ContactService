@@ -50,7 +50,7 @@ public interface ContactDao {
 	 * @param q word to find in title
 	 * @return contact that find from title
 	 */
-	public abstract Contact searchTitle(String q);
+
 	/**
 	 * search is that is exist or not
 	 * @param id of contact that want to find

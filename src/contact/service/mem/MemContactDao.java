@@ -28,10 +28,10 @@ public class MemContactDao implements ContactDao  {
 	public MemContactDao() {
 		contacts = new ArrayList<Contact>();
 		nextId = new AtomicLong(1000L);
-		createTestContact(100);
-		createTestContact(101);
-		createTestContact(102);
-		createTestContact(123);
+//		createTestContact(100);
+//		createTestContact(101);
+//		createTestContact(102);
+//		createTestContact(123);
 	}
 	
 	/** add a single contact with given id for testing. */
@@ -165,9 +165,10 @@ public class MemContactDao implements ContactDao  {
 	
 	@Override
 	public void removeAll() {
-		for ( Contact contact : findAll() ) {
-			delete( contact.getId() );
-		}
+		contacts.clear();
+//		for ( Contact contact : findAll() ) {
+//			delete( contact.getId() );
+//		}
 	}
 }
 

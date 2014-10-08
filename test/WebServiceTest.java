@@ -106,13 +106,13 @@ public class WebServiceTest {
 	 
 	 @Test
 	 public void testPutFail() throws InterruptedException, TimeoutException, ExecutionException {
-		 StringContentProvider content = new StringContentProvider("<contact id=\"101\">" +
+		 StringContentProvider content = new StringContentProvider("<contact id=\"555\">" +
 					"<title>Titile of test post</title>" +
 					"<name>Full Name</name>" +
 					"<email>wat wattanagaroon</email>" +
 					"<phoneNumber>555555555</phoneNumber>"+
 					"</contact>");
-		 Request request = client.newRequest(serviceUrl+"contacts/101");
+		 Request request = client.newRequest(serviceUrl+"contacts/555");
 		 request.method(HttpMethod.PUT);
 		 request.content(content, "application/xml");
 		 ContentResponse res = request.send();
@@ -137,7 +137,7 @@ public class WebServiceTest {
 		 request.method(HttpMethod.DELETE);
 		 ContentResponse res = request.send();
 		 
-		 assertEquals("Contact does not exist should response 400 Bad Request", Status.BAD_REQUEST.getStatusCode(), res.getStatus());
+		 assertEquals("Contact does not exist should response 404 NOT FOUND", Status.NOT_FOUND.getStatusCode(), res.getStatus());
 	 }
 
 
